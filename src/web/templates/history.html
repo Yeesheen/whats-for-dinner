@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}History - What's for Dinner{% endblock %}
+
+{% block content %}
+<div class="history-page">
+    <h1>Recommendation History</h1>
+    <p class="subtitle">View and rate your past recipe recommendations</p>
+
+    <div class="filters">
+        <div class="filter-tabs">
+            <a href="{{ url_for('history', rated='all') }}"
+               class="filter-tab {% if rated_filter == 'all' %}active{% endif %}">
+                All Recommendations
+            </a>
+            <a href="{{ url_for('history', rated='unrated') }}"
+               class="filter-tab {% if rated_filter == 'unrated' %}active{% endif %}">
+                Unrated
+            </a>
+            <a href="{{ url_for('history', rated='rated') }}"
+               class="filter-tab {% if rated_filter == 'rated' %}active{% endif %}">
+                Rated
+            </a>
+        </div>
+    </div>
+
+    {% if recommendations %}
+    <div class="history-list">
+        {% for rec in recommendations %}
+        <div class="history-card">
+            <div class="history-card-header">
+                <div>
+                    <h3>
+                        <a href="{{ url_for('recipe_detail', recipe_id=rec.recipe.id) }}">
+                            {{ rec.recipe.title }}
+                        </a>
+                    </h3>
+                    <span class="history-date">Sent on {{ rec.sent_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                </div>
+                <div class="history-status">
+                    {% if rec.rated %}
+                    <div class="rating-display">
+                        <span class="rating-stars">{{ '⭐' * rec.rating }}</span>
+                        <span class="rating-date">Rated {{ rec.rated_at.strftime('%b %d, %Y') }}</span>
+                    </div>
+                    {% else %}
+                    <span class="badge badge-warning">Unrated</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="recipe-meta">
+                {% if rec.recipe.ready_in_minutes %}
+                <span>⏱️ {{ rec.recipe.ready_in_minutes }} min</span>
+                {% endif %}
+                {% if rec.recipe.cuisine_type %}
+                <span>🌍 {{ rec.recipe.cuisine_type }}</span>
+                {% endif %}
+                {% if rec.recipe.source_website %}
+                <span>📍 {{ rec.recipe.source_website }}</span>
+                {% endif %}
+            </div>
+
+            <div class="history-actions">
+                <a href="{{ url_for('recipe_detail', recipe_id=rec.recipe.id) }}" class="btn btn-secondary">
+                    View Recipe
+                </a>
+                {% if not rec.rated %}
+                <a href="{{ url_for('rate', recommendation_id=rec.id) }}" class="btn btn-primary">
+                    Rate Recipe
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">
+        {% if rated_filter == 'unrated' %}
+        No unrated recipes! You're all caught up.
+        {% elif rated_filter == 'rated' %}
+        No rated recipes yet. Rate some recipes to build your preference profile!
+        {% else %}
+        No recommendation history yet. Check back after your first daily email!
+        {% endif %}
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

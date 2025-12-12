@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Preferences - What's for Dinner{% endblock %}
+
+{% block content %}
+<div class="preferences-page">
+    <h1>Your Learned Preferences</h1>
+    <p class="subtitle">Based on {{ rated_count }} rated recipe{{ 's' if rated_count != 1 else '' }}</p>
+
+    <div class="phase-banner phase-{{ phase.lower().replace(' ', '-') }}">
+        <div class="phase-info">
+            <strong>Current Phase: {{ phase }}</strong>
+            <p>{{ phase_desc }}</p>
+        </div>
+    </div>
+
+    {% if prefs_by_type %}
+    <div class="preferences-sections">
+        {% for pref_type, prefs in prefs_by_type.items() %}
+        <div class="preference-section">
+            <h2>{{ pref_type.replace('_', ' ').title() }}</h2>
+            <div class="preference-items">
+                {% for pref in prefs %}
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <span class="preference-label">{{ pref.preference_value }}</span>
+                        <span class="preference-score {{ 'positive' if pref.score > 0 else 'negative' if pref.score < 0 else 'neutral' }}">
+                            {{ '{:+.1f}'.format(pref.score) }}
+                        </span>
+                    </div>
+                    <div class="preference-bar-container">
+                        <div class="preference-bar">
+                            {% if pref.score >= 0 %}
+                            <div class="preference-fill positive" style="width: {{ min(pref.score * 10, 100) }}%;"></div>
+                            {% else %}
+                            <div class="preference-fill negative" style="width: {{ min(abs(pref.score) * 10, 100) }}%;"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <span class="preference-updated">Updated {{ pref.last_updated.strftime('%b %d, %Y') }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state-box">
+        <h3>No preferences learned yet</h3>
+        <p>Rate some recipes to help the system learn what you like!</p>
+        <a href="{{ url_for('history', rated='unrated') }}" class="btn btn-primary">Rate Recipes</a>
+    </div>
+    {% endif %}
+
+    <div class="preferences-info">
+        <h3>How Preference Learning Works</h3>
+        <div class="info-grid">
+            <div class="info-card">
+                <h4>Phase 1: Cold Start (0 ratings)</h4>
+                <p>Random diverse recipes to learn your taste. The system explores different cuisines and styles.</p>
+            </div>
+            <div class="info-card">
+                <h4>Phase 2: Learning (1-20 ratings)</h4>
+                <p>70% recommendations match your preferences, 30% explore new options. Building your profile.</p>
+            </div>
+            <div class="info-card">
+                <h4>Phase 3: Personalized (20+ ratings)</h4>
+                <p>80% strong preference matching, 20% exploration. Highly tailored to your taste.</p>
+            </div>
+        </div>
+
+        <div class="rating-impact">
+            <h4>Rating Impact on Preferences</h4>
+            <ul>
+                <li>⭐⭐⭐⭐⭐ (5 stars): +2.0 score - Love it!</li>
+                <li>⭐⭐⭐⭐ (4 stars): +1.0 score - Like it</li>
+                <li>⭐⭐⭐ (3 stars): 0.0 score - Neutral</li>
+                <li>⭐⭐ (2 stars): -1.0 score - Dislike</li>
+                <li>⭐ (1 star): -2.0 score - Avoid</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

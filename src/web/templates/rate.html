@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Rate Recipe - What's for Dinner{% endblock %}
+
+{% block content %}
+<div class="rate-page">
+    <h1>Rate Recipe</h1>
+
+    <div class="recipe-preview">
+        <h2>{{ recommendation.recipe.title }}</h2>
+
+        {% if recommendation.recipe.image_url %}
+        <img src="{{ recommendation.recipe.image_url }}" alt="{{ recommendation.recipe.title }}" class="recipe-preview-image">
+        {% endif %}
+
+        <div class="recipe-meta">
+            {% if recommendation.recipe.ready_in_minutes %}
+            <span>⏱️ {{ recommendation.recipe.ready_in_minutes }} min</span>
+            {% endif %}
+            {% if recommendation.recipe.cuisine_type %}
+            <span>🌍 {{ recommendation.recipe.cuisine_type }}</span>
+            {% endif %}
+            {% if recommendation.recipe.source_website %}
+            <span>📍 {{ recommendation.recipe.source_website }}</span>
+            {% endif %}
+        </div>
+
+        <p class="recipe-sent-date">Sent on {{ recommendation.sent_at.strftime('%B %d, %Y') }}</p>
+    </div>
+
+    <form method="post" class="rating-form">
+        <div class="rating-section">
+            <label for="rating">How would you rate this recipe?</label>
+
+            <div class="star-rating">
+                <input type="radio" name="rating" id="star5" value="5">
+                <label for="star5" title="5 stars - Love it!">⭐⭐⭐⭐⭐</label>
+
+                <input type="radio" name="rating" id="star4" value="4">
+                <label for="star4" title="4 stars - Like it">⭐⭐⭐⭐</label>
+
+                <input type="radio" name="rating" id="star3" value="3">
+                <label for="star3" title="3 stars - Neutral">⭐⭐⭐</label>
+
+                <input type="radio" name="rating" id="star2" value="2">
+                <label for="star2" title="2 stars - Dislike">⭐⭐</label>
+
+                <input type="radio" name="rating" id="star1" value="1">
+                <label for="star1" title="1 star - Avoid">⭐</label>
+            </div>
+
+            <div class="rating-guide">
+                <p><strong>Rating Guide:</strong></p>
+                <ul>
+                    <li>⭐⭐⭐⭐⭐ (5 stars): Love it! Show me more like this</li>
+                    <li>⭐⭐⭐⭐ (4 stars): Like it - good recipe</li>
+                    <li>⭐⭐⭐ (3 stars): Neutral - it's okay</li>
+                    <li>⭐⭐ (2 stars): Dislike - not my preference</li>
+                    <li>⭐ (1 star): Avoid - don't send recipes like this</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Submit Rating</button>
+            <a href="{{ url_for('history') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+
+    <div class="recipe-actions">
+        <a href="{{ url_for('recipe_detail', recipe_id=recommendation.recipe.id) }}" class="btn btn-link">
+            View Full Recipe →
+        </a>
+    </div>
+</div>
+{% endblock %}

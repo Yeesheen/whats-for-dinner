@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - What's for Dinner{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+    <h1>Settings</h1>
+    <p class="subtitle">Configure your recipe recommender preferences</p>
+
+    <div class="settings-section">
+        <h2>Weekly Meal Planning</h2>
+        <p>Control how many ingredients you want to buy each week for your meal plan.</p>
+
+        <form method="post" class="settings-form">
+            <div class="form-group">
+                <label for="max_ingredients_per_week">
+                    Maximum Ingredients Per Week
+                    <span class="help-text">The system will try to find 3 recipes that use no more than this many unique ingredients (excluding pantry staples like salt, pepper, olive oil, etc.)</span>
+                </label>
+                <input
+                    type="number"
+                    id="max_ingredients_per_week"
+                    name="max_ingredients_per_week"
+                    value="{{ user.max_ingredients_per_week }}"
+                    min="5"
+                    max="50"
+                    required
+                >
+                <div class="form-hint">
+                    <p><strong>Suggested values:</strong></p>
+                    <ul>
+                        <li><strong>10-15 ingredients:</strong> Very minimal shopping, recipes will share many ingredients</li>
+                        <li><strong>15-20 ingredients:</strong> Balanced approach (recommended)</li>
+                        <li><strong>20-30 ingredients:</strong> More variety, less ingredient overlap</li>
+                        <li><strong>30+ ingredients:</strong> Maximum variety, minimal optimization</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+                <a href="{{ url_for('weekly_planner') }}" class="btn btn-secondary">View Weekly Planner</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="info-section">
+        <h3>What are pantry staples?</h3>
+        <p>The following items don't count toward your ingredient budget:</p>
+        <div class="staples-list">
+            <div class="staples-column">
+                <h4>Oils & Fats</h4>
+                <ul>
+                    <li>Olive oil</li>
+                    <li>Vegetable oil</li>
+                    <li>Butter</li>
+                </ul>
+            </div>
+            <div class="staples-column">
+                <h4>Seasonings</h4>
+                <ul>
+                    <li>Salt & pepper</li>
+                    <li>Common spices (cumin, paprika, etc.)</li>
+                    <li>Vinegar</li>
+                    <li>Soy sauce</li>
+                </ul>
+            </div>
+            <div class="staples-column">
+                <h4>Baking Basics</h4>
+                <ul>
+                    <li>Flour</li>
+                    <li>Sugar</li>
+                    <li>Baking powder/soda</li>
+                    <li>Vanilla extract</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-page {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.settings-section {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.settings-form {
+    margin-top: 2rem;
+}
+
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.help-text {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: normal;
+    color: #7f8c8d;
+    margin-top: 0.3rem;
+}
+
+.form-group input[type="number"] {
+    width: 200px;
+    padding: 0.6rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-hint {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.form-hint ul {
+    margin: 0.5rem 0 0 1.5rem;
+}
+
+.form-hint li {
+    margin: 0.3rem 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.info-section {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+.info-section h3 {
+    color: #2c3e50;
+    margin-top: 0;
+}
+
+.staples-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.staples-column h4 {
+    color: #3498db;
+    margin-bottom: 0.5rem;
+}
+
+.staples-column ul {
+    list-style: none;
+    padding: 0;
+}
+
+.staples-column li {
+    padding: 0.2rem 0;
+    color: #555;
+}
+
+.staples-column li:before {
+    content: "✓ ";
+    color: #27ae60;
+    margin-right: 0.5rem;
+}
+</style>
+{% endblock %}

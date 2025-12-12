@@ -1,0 +1,23 @@
+services:
+  # Web Service (Flask app)
+  - type: web
+    name: recipe-recommender
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 src.web.app:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.18
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: recipe-recommender-db
+          property: connectionString
+
+databases:
+  # PostgreSQL Database
+  - name: recipe-recommender-db
+    databaseName: recipe_recommender
+    user: recipe_user
+    plan: free

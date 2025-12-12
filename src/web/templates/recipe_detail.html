@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}{{ recipe.title }} - What's for Dinner{% endblock %}
+
+{% block content %}
+<div class="recipe-detail">
+    <div class="recipe-header">
+        <h1>{{ recipe.title }}</h1>
+        {% if recipe.source_url %}
+        <p class="recipe-source">
+            <a href="{{ recipe.source_url }}" target="_blank">
+                🔗 View original recipe on {{ recipe.source_website }}
+            </a>
+        </p>
+        {% endif %}
+    </div>
+
+    {% if recipe.image_url %}
+    <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="recipe-detail-image">
+    {% endif %}
+
+    <div class="recipe-meta-detail">
+        {% if recipe.ready_in_minutes %}
+        <div class="meta-item">
+            <span class="meta-label">⏱️ Time</span>
+            <span class="meta-value">{{ recipe.ready_in_minutes }} minutes</span>
+        </div>
+        {% endif %}
+        {% if recipe.servings %}
+        <div class="meta-item">
+            <span class="meta-label">🍽️ Servings</span>
+            <span class="meta-value">{{ recipe.servings }}</span>
+        </div>
+        {% endif %}
+        {% if recipe.cuisine_type %}
+        <div class="meta-item">
+            <span class="meta-label">🌍 Cuisine</span>
+            <span class="meta-value">{{ recipe.cuisine_type }}</span>
+        </div>
+        {% endif %}
+        {% if recipe.difficulty %}
+        <div class="meta-item">
+            <span class="meta-label">📊 Difficulty</span>
+            <span class="meta-value">{{ recipe.difficulty|capitalize }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if user_rating %}
+    <div class="alert alert-success">
+        You rated this recipe: {{ '⭐' * user_rating }}
+    </div>
+    {% endif %}
+
+    <div class="recipe-content">
+        <div class="ingredients-section">
+            <h2>Ingredients</h2>
+            <ul class="ingredients-list">
+                {% for ingredient in ingredients %}
+                <li>{{ ingredient.original }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="instructions-section">
+            <h2>Instructions</h2>
+            <ol class="instructions-list">
+                {% for step in instructions %}
+                <li>{{ step.step }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+
+    <div class="recipe-actions">
+        <a href="{{ url_for('recipes') }}" class="btn btn-secondary">← Back to Recipes</a>
+    </div>
+</div>
+{% endblock %}

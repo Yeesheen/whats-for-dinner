@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shopping List - What's for Dinner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 1.5rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-meta {
+            font-size: 0.9rem;
+            opacity: 0.95;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .recipe-list {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 8px;
+        }
+
+        .recipe-list h2 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .recipe-list ul {
+            list-style: none;
+        }
+
+        .recipe-list li {
+            font-size: 0.85rem;
+            padding: 0.25rem 0;
+            opacity: 0.95;
+        }
+
+        .recipe-list li:before {
+            content: "→ ";
+            margin-right: 0.3rem;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.3);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .shopping-section {
+            padding: 1.5rem 1rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .section-header h2 {
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .item-count {
+            background: #ff6b6b;
+            color: white;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .shopping-list {
+            list-style: none;
+        }
+
+        .shopping-item {
+            border-left: 4px solid #ff6b6b;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            margin-bottom: 0.75rem;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .shopping-item.checked {
+            opacity: 0.5;
+            border-left-color: #95a5a6;
+        }
+
+        .shopping-item label {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            cursor: pointer;
+            user-select: none;
+            gap: 1rem;
+        }
+
+        .shopping-item input[type="checkbox"] {
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            flex-shrink: 0;
+            accent-color: #ff6b6b;
+        }
+
+        .item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+
+        .shopping-item.checked .item-name {
+            text-decoration: line-through;
+        }
+
+        .item-quantities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.4rem;
+        }
+
+        .qty-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .uses-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        .share-section {
+            margin-bottom: 1rem;
+        }
+
+        .share-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .share-btn:active {
+            transform: scale(0.98);
+        }
+
+        .copy-feedback {
+            display: none;
+            color: #27ae60;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+
+        .copy-feedback.show {
+            display: block;
+        }
+
+        .footer-link {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #7f8c8d;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 1rem;
+        }
+
+        /* Loading indicator */
+        .saving-indicator {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            display: none;
+            z-index: 1000;
+        }
+
+        .saving-indicator.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Shopping List</h1>
+            <div class="header-meta">
+                <span id="checked-count">0</span> / <span id="total-count">{{ ingredients|length }}</span> items
+                <span id="percentage">0%</span>
+            </div>
+
+            {% if recipe_titles %}
+            <div class="recipe-list">
+                <h2>This Week's Recipes:</h2>
+                <ul>
+                    {% for title in recipe_titles %}
+                    <li>{{ title }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="shopping-section">
+            <div class="section-header">
+                <h2>Ingredients</h2>
+                <span class="item-count" id="remaining-count">{{ ingredients|length }}</span>
+            </div>
+
+            {% if ingredients %}
+            <ul class="shopping-list" id="shopping-list">
+                {% for ingredient in ingredients %}
+                <li class="shopping-item {% if ingredient.checked %}checked{% endif %}" data-index="{{ loop.index0 }}">
+                    <label>
+                        <input
+                            type="checkbox"
+                            {% if ingredient.checked %}checked{% endif %}
+                            onchange="toggleItem({{ loop.index0 }})"
+                        >
+                        <div class="item-content">
+                            <div class="item-name">{{ ingredient.name|title }}</div>
+                            <div class="item-quantities">
+                                {% for qty in ingredient.quantities %}
+                                <span class="qty-tag">{{ qty }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if ingredient.quantities|length > 1 %}
+                        <span class="uses-badge">×{{ ingredient.quantities|length }}</span>
+                        {% endif %}
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-state">
+                <h3>No ingredients found</h3>
+                <p>This shopping list is empty</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <div class="share-section">
+                <button class="share-btn" onclick="shareList()">
+                    📤 Share This List
+                </button>
+                <div class="copy-feedback" id="copy-feedback">✓ Link copied to clipboard!</div>
+            </div>
+            <a href="{{ url_for('home') }}" class="footer-link">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="saving-indicator" id="saving-indicator">
+        💾 Syncing...
+    </div>
+
+    <script>
+        // Global state
+        let ingredients = {{ ingredients|tojson }};
+        const token = "{{ token }}";
+        let saveTimeout = null;
+
+        // Update UI counters
+        function updateCounters() {
+            const total = ingredients.length;
+            const checked = ingredients.filter(ing => ing.checked).length;
+            const remaining = total - checked;
+            const percentage = total > 0 ? Math.round((checked / total) * 100) : 0;
+
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('checked-count').textContent = checked;
+            document.getElementById('remaining-count').textContent = remaining;
+            document.getElementById('percentage').textContent = percentage + '%';
+            document.getElementById('progress-fill').style.width = percentage + '%';
+        }
+
+        // Toggle item checked state
+        function toggleItem(index) {
+            ingredients[index].checked = !ingredients[index].checked;
+
+            // Update UI
+            const item = document.querySelector(`.shopping-item[data-index="${index}"]`);
+            if (ingredients[index].checked) {
+                item.classList.add('checked');
+            } else {
+                item.classList.remove('checked');
+            }
+
+            updateCounters();
+            saveToServer();
+        }
+
+        // Save to server with debouncing
+        function saveToServer() {
+            // Clear existing timeout
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+            }
+
+            // Show saving indicator
+            document.getElementById('saving-indicator').classList.add('show');
+
+            // Debounce the save
+            saveTimeout = setTimeout(() => {
+                fetch(`/api/shopping/${token}/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ ingredients: ingredients })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide saving indicator after successful save
+                    setTimeout(() => {
+                        document.getElementById('saving-indicator').classList.remove('show');
+                    }, 500);
+                })
+                .catch(error => {
+                    console.error('Error saving:', error);
+                    document.getElementById('saving-indicator').classList.remove('show');
+                });
+            }, 500);
+        }
+
+        // Share functionality
+        async function shareList() {
+            const url = window.location.href;
+            const copyFeedback = document.getElementById('copy-feedback');
+
+            // Try Web Share API first (mobile)
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Shopping List - What\'s for Dinner',
+                        text: 'Check out our weekly shopping list!',
+                        url: url
+                    });
+                    return;
+                } catch (err) {
+                    // User cancelled share or error occurred
+                    console.log('Share cancelled or failed:', err);
+                }
+            }
+
+            // Fallback to clipboard
+            try {
+                await navigator.clipboard.writeText(url);
+                copyFeedback.classList.add('show');
+                setTimeout(() => {
+                    copyFeedback.classList.remove('show');
+                }, 3000);
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    copyFeedback.classList.add('show');
+                    setTimeout(() => {
+                        copyFeedback.classList.remove('show');
+                    }, 3000);
+                } catch (err) {
+                    alert('Failed to copy link. Please copy manually: ' + url);
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        // Initialize counters on page load
+        updateCounters();
+    </script>
+</body>
+</html>

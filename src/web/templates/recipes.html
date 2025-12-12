@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Recipes - What's for Dinner{% endblock %}
+
+{% block content %}
+<div class="recipes-page">
+    <h1>Recipe Collection</h1>
+    <p class="subtitle">Browse all {{ recipes|length }} recipes in your database</p>
+
+    <div class="filters">
+        <form method="get" action="{{ url_for('recipes') }}" class="filter-form">
+            <div class="filter-group">
+                <label for="cuisine">Cuisine:</label>
+                <select name="cuisine" id="cuisine" onchange="this.form.submit()">
+                    <option value="">All Cuisines</option>
+                    {% for cuisine in cuisines %}
+                    <option value="{{ cuisine }}" {% if current_cuisine == cuisine %}selected{% endif %}>
+                        {{ cuisine }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="source">Source:</label>
+                <select name="source" id="source" onchange="this.form.submit()">
+                    <option value="">All Sources</option>
+                    {% for source in sources %}
+                    <option value="{{ source }}" {% if current_source == source %}selected{% endif %}>
+                        {{ source }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="sort">Sort by:</label>
+                <select name="sort" id="sort" onchange="this.form.submit()">
+                    <option value="recent" {% if current_sort == 'recent' %}selected{% endif %}>Recently Added</option>
+                    <option value="title" {% if current_sort == 'title' %}selected{% endif %}>Title (A-Z)</option>
+                    <option value="time" {% if current_sort == 'time' %}selected{% endif %}>Cooking Time</option>
+                </select>
+            </div>
+
+            <a href="{{ url_for('recipes') }}" class="btn btn-secondary">Clear Filters</a>
+        </form>
+    </div>
+
+    {% if recipes %}
+    <div class="recipe-grid">
+        {% for recipe in recipes %}
+        <div class="recipe-card-grid">
+            {% if recipe.image_url %}
+            <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="recipe-image">
+            {% else %}
+            <div class="recipe-image-placeholder">🍽️</div>
+            {% endif %}
+            <div class="recipe-card-content">
+                <h3>
+                    <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}">
+                        {{ recipe.title }}
+                    </a>
+                </h3>
+                <div class="recipe-meta">
+                    {% if recipe.ready_in_minutes %}
+                    <span>⏱️ {{ recipe.ready_in_minutes }} min</span>
+                    {% endif %}
+                    {% if recipe.servings %}
+                    <span>🍽️ {{ recipe.servings }} servings</span>
+                    {% endif %}
+                </div>
+                {% if recipe.cuisine_type %}
+                <span class="badge">{{ recipe.cuisine_type }}</span>
+                {% endif %}
+                {% if recipe.source_website %}
+                <div class="recipe-source">
+                    <a href="{{ recipe.source_url }}" target="_blank">
+                        📍 {{ recipe.source_website }}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">No recipes found. Try adjusting your filters.</p>
+    {% endif %}
+</div>
+{% endblock %}

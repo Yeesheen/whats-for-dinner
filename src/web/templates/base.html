@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}What's for Dinner{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('home') }}" class="nav-brand">🍽️ What's for Dinner</a>
+            <ul class="nav-menu">
+                <li><a href="{{ url_for('home') }}" class="{% if request.endpoint == 'home' %}active{% endif %}">Dashboard</a></li>
+                <li><a href="{{ url_for('weekly_planner') }}" class="{% if request.endpoint == 'weekly_planner' %}active{% endif %}">Weekly Planner</a></li>
+                <li><a href="{{ url_for('recipes') }}" class="{% if request.endpoint in ['recipes', 'recipe_detail'] %}active{% endif %}">Recipes</a></li>
+                <li><a href="{{ url_for('history') }}" class="{% if request.endpoint in ['history', 'rate'] %}active{% endif %}">History</a></li>
+                <li><a href="{{ url_for('preferences') }}" class="{% if request.endpoint == 'preferences' %}active{% endif %}">Preferences</a></li>
+                <li><a href="{{ url_for('settings') }}" class="{% if request.endpoint == 'settings' %}active{% endif %}">Settings</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>What's for Dinner - Powered by your taste preferences</p>
+    </footer>
+</body>
+</html>

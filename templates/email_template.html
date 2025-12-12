@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Daily Dinner Recipes</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 28px;
+        }
+        .header .date {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .recipe {
+            margin-bottom: 40px;
+        }
+        .recipe-number {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .recipe h2 {
+            color: #2c3e50;
+            margin: 10px 0;
+            font-size: 24px;
+        }
+        .recipe-image {
+            width: 100%;
+            max-width: 540px;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .recipe-meta {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .recipe-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .ingredients-list {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .ingredients-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .ingredients-list li {
+            margin: 5px 0;
+            color: #555;
+        }
+        .instructions {
+            margin: 10px 0;
+        }
+        .instruction-step {
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .instruction-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-color: #3498db;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .divider {
+            border: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+            margin: 40px 0;
+        }
+        .rating-section {
+            background-color: #fff9e6;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+            margin-top: 40px;
+        }
+        .rating-section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 18px;
+        }
+        .rating-section p {
+            margin: 10px 0;
+            color: #555;
+        }
+        .rating-example {
+            background-color: #ffffff;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #27ae60;
+            margin: 10px 0;
+            border: 1px solid #d4edda;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Your Daily Dinner Recipes</h1>
+            <div class="date">{{ date }}</div>
+        </div>
+
+        {% for recipe in recipes %}
+        <div class="recipe">
+            <div class="recipe-number">Recipe {{ loop.index }}</div>
+            <h2>{{ recipe.title }}</h2>
+            {% if recipe.source_url %}
+            <p style="margin: 5px 0 15px 0;">
+                <a href="{{ recipe.source_url }}" style="color: #3498db; text-decoration: none; font-size: 14px;">
+                    🔗 View original recipe on {{ recipe.source_website }}
+                </a>
+            </p>
+            {% endif %}
+
+            {% if recipe.image_url %}
+            <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="recipe-image">
+            {% endif %}
+
+            <div class="recipe-meta">
+                <span>⏱️ {{ recipe.ready_in_minutes }} min</span>
+                <span>🍽️ {{ recipe.servings }} servings</span>
+                {% if recipe.cuisine_type %}
+                <span>🌍 {{ recipe.cuisine_type }}</span>
+                {% endif %}
+                {% if recipe.difficulty %}
+                <span>📊 {{ recipe.difficulty|capitalize }}</span>
+                {% endif %}
+            </div>
+
+            <div class="section-title">Ingredients:</div>
+            <div class="ingredients-list">
+                <ul>
+                {% for ingredient in recipe.ingredients %}
+                    <li>{{ ingredient.original }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+
+            <div class="section-title">Instructions:</div>
+            <div class="instructions">
+                {% for step in recipe.instructions %}
+                <div class="instruction-step" data-step="{{ step.number }}">
+                    {{ step.step }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if not loop.last %}
+        <hr class="divider">
+        {% endif %}
+        {% endfor %}
+
+        <div class="rating-section">
+            <h3>📝 Rate These Recipes</h3>
+            <p>Help me learn your preferences! Reply to this email with your ratings (1-5 stars):</p>
+            <div class="rating-example">
+                Recipe 1: 4, Recipe 2: 5
+            </div>
+            <p style="font-size: 12px; margin-top: 15px;">
+                You can also use these formats:<br>
+                • "1: 4, 2: 5"<br>
+                • "Recipe 1: ⭐⭐⭐⭐"<br>
+                • "4/5 for recipe 1, 5/5 for recipe 2"
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>Generated with Recipe Recommender</p>
+            <p>Powered by <a href="https://spoonacular.com">Spoonacular API</a></p>
+        </div>
+    </div>
+</body>
+</html>

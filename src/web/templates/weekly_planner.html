@@ -1,0 +1,628 @@
+{% extends "base.html" %}
+
+{% block title %}Weekly Meal Planner - What's for Dinner{% endblock %}
+
+{% block content %}
+<div class="weekly-planner">
+    <h1>Weekly Meal Planner</h1>
+    <p class="subtitle">3 recipes optimized for minimal grocery shopping - smart ingredient overlap reduces your shopping list</p>
+
+    <div class="planner-info-grid">
+        <div class="info-card-small">
+            <span class="info-icon">🧠</span>
+            <div>
+                <strong>Smart Selection</strong>
+                <p>Recipes chosen to maximize ingredient overlap while maintaining your taste preferences</p>
+            </div>
+        </div>
+        <div class="info-card-small">
+            <span class="info-icon">🛒</span>
+            <div>
+                <strong>Pantry Staples Excluded</strong>
+                <p>Salt, pepper, oil, and common spices don't count toward your ingredient budget</p>
+            </div>
+        </div>
+        <div class="info-card-small">
+            <span class="info-icon">🔄</span>
+            <div>
+                <strong>Fresh Each Time</strong>
+                <p>Generate a new plan anytime - won't show recently sent or poorly-rated recipes</p>
+            </div>
+        </div>
+    </div>
+
+    {% if stats %}
+    <div class="planner-summary">
+        <div class="summary-card {% if stats.within_budget %}budget-ok{% else %}budget-over{% endif %}">
+            <div class="summary-icon">🛒</div>
+            <div class="summary-content">
+                <div class="summary-number">{{ stats.ingredient_count }}</div>
+                <div class="summary-label">Unique Ingredients</div>
+                <div class="summary-detail">
+                    {% if stats.within_budget %}
+                        ✓ Within your {{ stats.max_ingredients_budget }} ingredient budget
+                    {% else %}
+                        {{ stats.ingredient_count - stats.max_ingredients_budget }} over budget
+                        <br><small><a href="{{ url_for('settings') }}">Adjust in settings</a></small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-icon">💰</div>
+            <div class="summary-content">
+                <div class="summary-number">{{ stats.savings.savings }}</div>
+                <div class="summary-label">Ingredients Saved</div>
+                <div class="summary-detail">
+                    {{ stats.savings.overlap_percentage }}% overlap vs. cooking separately
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-icon">⭐</div>
+            <div class="summary-content">
+                <div class="summary-number">{{ stats.avg_preference_score|round(1) }}</div>
+                <div class="summary-label">Avg Preference Score</div>
+                <div class="summary-detail">
+                    Based on your taste preferences
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="shopping-list-section">
+        <div class="shopping-header">
+            <h2>🛒 Shopping List ({{ stats.unique_ingredients|length }} items)</h2>
+            {% if share_url %}
+            <div class="share-link-box">
+                <div class="share-link-header">
+                    <span class="share-icon">📱</span>
+                    <strong>Mobile Shopping List</strong>
+                </div>
+                <p class="share-description">Share this link with your partner or access on your phone while shopping</p>
+                <div class="share-link-input">
+                    <input type="text" id="share-url-input" value="{{ share_url }}" readonly>
+                    <button class="copy-btn" onclick="copyShareLink()">📋 Copy</button>
+                </div>
+                <div class="copy-success" id="copy-success">✓ Link copied to clipboard!</div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="shopping-list">
+            {% for ingredient in stats.unique_ingredients|sort %}
+            {% set details = stats.detailed_ingredients[ingredient] %}
+            <div class="shopping-item">
+                <input type="checkbox" id="ing-{{ loop.index }}">
+                <label for="ing-{{ loop.index }}">
+                    <strong>{{ ingredient|title }}</strong>
+                    {% if details|length > 1 %}<span class="uses-badge">×{{ details|length }}</span>{% endif %}
+                    <span class="quantities">
+                        {% for detail in details %}<span class="qty-tag">{{ detail.quantity }}</span>{% if not loop.last %} + {% endif %}{% endfor %}
+                    </span>
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="recipes-section">
+        <h2>This Week's Recipes</h2>
+
+        {% for recipe in recipes %}
+        <div class="weekly-recipe-card">
+            <div class="recipe-header-row">
+                <div class="recipe-info">
+                    <span class="recipe-day">Recipe {{ loop.index }}</span>
+                    <h3>
+                        <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}">
+                            {{ recipe.title }}
+                        </a>
+                    </h3>
+                    {% if recipe.source_url %}
+                    <p class="recipe-source">
+                        <a href="{{ recipe.source_url }}" target="_blank">
+                            🔗 {{ recipe.source_website }}
+                        </a>
+                    </p>
+                    {% endif %}
+                    <div class="recipe-meta">
+                        {% if recipe.ready_in_minutes %}
+                        <span>⏱️ {{ recipe.ready_in_minutes }} min</span>
+                        {% endif %}
+                        {% if recipe.servings %}
+                        <span>🍽️ {{ recipe.servings }} servings</span>
+                        {% endif %}
+                        {% if recipe.cuisine_type %}
+                        <span>🌍 {{ recipe.cuisine_type }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="preference-indicator">
+                        Preference Score: <strong>{{ recipe.preference_score|round(1) }}</strong>
+                    </div>
+                </div>
+
+                {% if recipe.image_url %}
+                <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="recipe-thumbnail">
+                {% endif %}
+            </div>
+
+            <details class="recipe-details">
+                <summary>View Ingredients & Instructions</summary>
+
+                <div class="recipe-content-grid">
+                    <div class="ingredients-column">
+                        <h4>Ingredients ({{ recipe.ingredients|length }})</h4>
+                        <ul>
+                            {% for ingredient in recipe.ingredients %}
+                            <li>{{ ingredient.original }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="instructions-column">
+                        <h4>Instructions ({{ recipe.instructions|length }} steps)</h4>
+                        <ol>
+                            {% for step in recipe.instructions %}
+                            <li>{{ step.step }}</li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                </div>
+            </details>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="planner-actions">
+        <a href="{{ url_for('weekly_planner') }}" class="btn btn-primary" onclick="location.reload(); return false;">
+            🔄 Generate New Plan
+        </a>
+        <a href="{{ url_for('settings') }}" class="btn btn-secondary">
+            ⚙️ Adjust Ingredient Budget
+        </a>
+    </div>
+
+    {% else %}
+    <div class="empty-state-box">
+        <h3>Unable to generate weekly plan</h3>
+        <p>{{ flash_messages }}</p>
+        <a href="{{ url_for('recipes') }}" class="btn btn-primary">Browse Recipes</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.weekly-planner {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.planner-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.info-card-small {
+    background: linear-gradient(135deg, #fff 0%, #fffbf7 100%);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 2px solid #ffe5d9;
+    display: flex;
+    gap: 0.75rem;
+    align-items: start;
+}
+
+.info-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.info-card-small strong {
+    display: block;
+    color: #2c3e50;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+}
+
+.info-card-small p {
+    color: #7f8c8d;
+    font-size: 0.8rem;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.planner-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.summary-card.budget-ok {
+    border-left: 4px solid #27ae60;
+}
+
+.summary-card.budget-over {
+    border-left: 4px solid #f39c12;
+}
+
+.summary-icon {
+    font-size: 2.5rem;
+}
+
+.summary-content {
+    flex: 1;
+}
+
+.summary-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.summary-label {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-top: 0.3rem;
+}
+
+.summary-detail {
+    font-size: 0.85rem;
+    color: #95a5a6;
+    margin-top: 0.3rem;
+}
+
+.shopping-list-section {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.shopping-header h2 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.share-link-box {
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    border: 2px solid #90caf9;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.share-link-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.share-icon {
+    font-size: 1.5rem;
+}
+
+.share-link-header strong {
+    color: #1976d2;
+    font-size: 1.1rem;
+}
+
+.share-description {
+    color: #555;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.share-link-input {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+}
+
+.share-link-input input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid #90caf9;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: monospace;
+    background: white;
+}
+
+.copy-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.1s;
+}
+
+.copy-btn:hover {
+    transform: scale(1.02);
+}
+
+.copy-btn:active {
+    transform: scale(0.98);
+}
+
+.copy-success {
+    display: none;
+    color: #27ae60;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.copy-success.show {
+    display: block;
+}
+
+.shopping-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.shopping-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 8px;
+    border-left: 3px solid #ff6b6b;
+    transition: all 0.2s ease;
+}
+
+.shopping-item:hover {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.15);
+}
+
+.shopping-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
+    accent-color: #ff6b6b;
+}
+
+.shopping-item label {
+    cursor: pointer;
+    user-select: none;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1rem;
+}
+
+.shopping-item label strong {
+    color: #2c3e50;
+    min-width: 150px;
+}
+
+.uses-badge {
+    background-color: #ff6b6b;
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.quantities {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.qty-tag {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.shopping-item input[type="checkbox"]:checked + label {
+    opacity: 0.4;
+    text-decoration: line-through;
+}
+
+.recipes-section {
+    margin-bottom: 2rem;
+}
+
+.weekly-recipe-card {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.recipe-header-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 1rem;
+}
+
+.recipe-info {
+    flex: 1;
+}
+
+.recipe-day {
+    display: inline-block;
+    background-color: #3498db;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.recipe-info h3 {
+    margin: 0.5rem 0;
+}
+
+.recipe-info h3 a {
+    color: #2c3e50;
+    text-decoration: none;
+}
+
+.recipe-info h3 a:hover {
+    color: #3498db;
+}
+
+.recipe-source {
+    margin: 0.3rem 0;
+    font-size: 0.9rem;
+}
+
+.recipe-source a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.recipe-thumbnail {
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.preference-indicator {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: #e8f4f8;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    display: inline-block;
+}
+
+.recipe-details {
+    margin-top: 1rem;
+    border-top: 1px solid #ecf0f1;
+    padding-top: 1rem;
+}
+
+.recipe-details summary {
+    cursor: pointer;
+    color: #3498db;
+    font-weight: 500;
+    padding: 0.5rem 0;
+}
+
+.recipe-details summary:hover {
+    color: #2980b9;
+}
+
+.recipe-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .recipe-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ingredients-column h4,
+.instructions-column h4 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.ingredients-column ul,
+.instructions-column ol {
+    padding-left: 1.5rem;
+}
+
+.ingredients-column li,
+.instructions-column li {
+    margin: 0.5rem 0;
+}
+
+.planner-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+</style>
+
+<script>
+// Copy share link to clipboard
+async function copyShareLink() {
+    const input = document.getElementById('share-url-input');
+    const successMsg = document.getElementById('copy-success');
+
+    try {
+        await navigator.clipboard.writeText(input.value);
+        successMsg.classList.add('show');
+        setTimeout(() => {
+            successMsg.classList.remove('show');
+        }, 3000);
+    } catch (err) {
+        // Fallback for older browsers
+        input.select();
+        try {
+            document.execCommand('copy');
+            successMsg.classList.add('show');
+            setTimeout(() => {
+                successMsg.classList.remove('show');
+            }, 3000);
+        } catch (err) {
+            alert('Failed to copy link. Please copy manually.');
+        }
+    }
+}
+
+// Save checkbox state to localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.shopping-item input[type="checkbox"]');
+
+    checkboxes.forEach(checkbox => {
+        // Load saved state
+        const saved = localStorage.getItem(checkbox.id);
+        if (saved === 'true') {
+            checkbox.checked = true;
+        }
+
+        // Save state on change
+        checkbox.addEventListener('change', function() {
+            localStorage.setItem(checkbox.id, checkbox.checked);
+        });
+    });
+});
+</script>
+{% endblock %}

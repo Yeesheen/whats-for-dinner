@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - What's for Dinner{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>Dashboard</h1>
+    <p class="subtitle">Your personal recipe recommendation system - learning your tastes, optimizing your groceries</p>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_recipes }}</div>
+            <div class="stat-label">Total Recipes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_sent }}</div>
+            <div class="stat-label">Recipes Sent</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_rated }}</div>
+            <div class="stat-label">Recipes Rated</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.avg_rating }}⭐</div>
+            <div class="stat-label">Average Rating</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="quick-actions-section">
+            <h3>Quick Actions</h3>
+            <div class="action-links">
+                <a href="{{ url_for('weekly_planner') }}" class="action-card">
+                    <span class="action-icon">📅</span>
+                    <div class="action-content">
+                        <strong>Weekly Planner</strong>
+                        <small>3 recipes, optimized ingredients</small>
+                    </div>
+                </a>
+                <a href="{{ url_for('recipes') }}" class="action-card">
+                    <span class="action-icon">📚</span>
+                    <div class="action-content">
+                        <strong>Browse Recipes</strong>
+                        <small>{{ stats.total_recipes }} recipes available</small>
+                    </div>
+                </a>
+                {% if stats.unrated_count > 0 %}
+                <a href="{{ url_for('history', rated='unrated') }}" class="action-card">
+                    <span class="action-icon">⭐</span>
+                    <div class="action-content">
+                        <strong>Rate Recipes</strong>
+                        <small>{{ stats.unrated_count }} waiting for rating</small>
+                    </div>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('settings') }}" class="action-card">
+                    <span class="action-icon">⚙️</span>
+                    <div class="action-content">
+                        <strong>Settings</strong>
+                        <small>Adjust ingredient budget</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="how-it-works-section">
+            <h3>How It Works</h3>
+            <div class="steps-list">
+                <div class="step-item">
+                    <span class="step-number">1</span>
+                    <div class="step-content">
+                        <strong>Get Daily Recommendations</strong>
+                        <p>Receive one recipe per day via email based on your preferences</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">2</span>
+                    <div class="step-content">
+                        <strong>Rate What You Like</strong>
+                        <p>Give 1-5 stars to teach the system your tastes</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">3</span>
+                    <div class="step-content">
+                        <strong>Watch It Learn</strong>
+                        <p>The more you rate, the better your recommendations become</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">4</span>
+                    <div class="step-content">
+                        <strong>Plan Your Week</strong>
+                        <p>Use the weekly planner for ingredient-optimized meal planning</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if stats.unrated_count > 0 %}
+    <div class="alert alert-info">
+        <strong>{{ stats.unrated_count }} recipe{{ 's' if stats.unrated_count != 1 else '' }} waiting for your rating!</strong>
+        <a href="{{ url_for('history', rated='unrated') }}">Rate now</a> to improve future recommendations.
+    </div>
+    {% endif %}
+
+    <div class="dashboard-section">
+        <h2>Recent Recommendations</h2>
+        {% if recent_recs %}
+        <div class="recipe-list">
+            {% for rec in recent_recs %}
+            <div class="recipe-card">
+                <div class="recipe-card-header">
+                    <h3>
+                        <a href="{{ url_for('recipe_detail', recipe_id=rec.recipe.id) }}">
+                            {{ rec.recipe.title }}
+                        </a>
+                    </h3>
+                    <span class="recipe-date">{{ rec.sent_at.strftime('%B %d, %Y') }}</span>
+                </div>
+                <div class="recipe-meta">
+                    {% if rec.recipe.ready_in_minutes %}
+                    <span>⏱️ {{ rec.recipe.ready_in_minutes }} min</span>
+                    {% endif %}
+                    {% if rec.recipe.cuisine_type %}
+                    <span>🌍 {{ rec.recipe.cuisine_type }}</span>
+                    {% endif %}
+                    {% if rec.recipe.source_website %}
+                    <span>📍 {{ rec.recipe.source_website }}</span>
+                    {% endif %}
+                </div>
+                <div class="recipe-actions">
+                    {% if rec.rated %}
+                    <span class="rating-badge">Rated: {{ '⭐' * rec.rating }}</span>
+                    {% else %}
+                    <a href="{{ url_for('rate', recommendation_id=rec.id) }}" class="btn btn-primary">Rate this recipe</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">No recommendations yet. Check back after your first daily email!</p>
+        {% endif %}
+    </div>
+
+    <div class="dashboard-section">
+        <h2>Top Preferences</h2>
+        {% if top_prefs %}
+        <div class="preferences-list">
+            {% for pref in top_prefs %}
+            <div class="preference-item">
+                <span class="preference-label">{{ pref.preference_value }}</span>
+                <div class="preference-bar">
+                    <div class="preference-fill" style="width: {{ (pref.score + 10) * 5 }}%;"></div>
+                </div>
+                <span class="preference-score">{{ '{:+.1f}'.format(pref.score) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('preferences') }}" class="btn btn-secondary">View all preferences</a>
+        {% else %}
+        <p class="empty-state">No preferences learned yet. Rate some recipes to build your profile!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
