@@ -6,10 +6,18 @@ set -o errexit
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Run database migrations
-alembic upgrade head
+# Create database tables first (handles the empty first migration)
+python -c "
+from src.models.database import create_db_engine, Base
+engine = create_db_engine()
+Base.metadata.create_all(engine)
+print('Database tables created successfully')
+"
 
-# Create initial user if needed (optional)
+# Run any additional migrations (for schema changes)
+alembic stamp head  # Mark all migrations as applied since we created tables directly
+
+# Create initial user if needed
 python -c "
 from src.models.database import get_session, User
 session = get_session()
